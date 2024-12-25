@@ -7,7 +7,6 @@ const DetailsScreen = ({ route }) => {
   return (
     <View style={styles.detailsContainer}>
       <View style={styles.box}>
-      <Text style={styles.detailsTitle}>{item.imageUrl}</Text>
         <Text style={styles.detailsTitle}>{item.name}</Text>
         <Text style={styles.detailsText}>Brand: {item.brand}</Text>
         <Text style={styles.detailsText}>Category: {item.category}</Text>
