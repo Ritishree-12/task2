@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+
 const data=[
   {
       "id": 1,
@@ -274,25 +275,25 @@ const data=[
 
 const HomeScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState(null);
+  const [filterType, setFilterType] = useState('All'); // Filter type: 'All', 'Name', 'Brand', or 'Price'
+  const [filterValue, setFilterValue] = useState('All'); // Selected filter value
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedFilterOption, setSelectedFilterOption] = useState(null);
 
+  // Generate unique options for each filter type
   const filterOptions = {
-    'Name': data.map(item => item.name),
-    'Brand': Array.from(new Set(data.map(item => item.brand))),
-    'Category': Array.from(new Set(data.map(item => item.category))),
+    Name: [...new Set(data.map((item) => item.name))],
+    Brand: [...new Set(data.map((item) => item.brand))],
+    Price: [...new Set(data.map((item) => item.price))],
   };
 
   const filteredData = data.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter =
-      !filterType ||
-      (filterType === 'Name' && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (filterType === 'Brand' && item.brand.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (filterType === 'Category' && item.category.toLowerCase().includes(searchQuery.toLowerCase()));
+      filterType === 'All' ||
+      (filterType === 'Name' && item.name === filterValue) ||
+      (filterType === 'Brand' && item.brand === filterValue) ||
+      (filterType === 'Price' && item.price === filterValue);
     return matchesSearch && matchesFilter;
   });
 
@@ -307,9 +308,10 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity
               style={styles.modalOption}
               onPress={() => {
-                setSearchQuery(item); 
+                setFilterType(selectedFilterOption);
+                setFilterValue(item);
                 setModalVisible(false);
-                setSelectedFilterOption(null); 
+                setSelectedFilterOption(null);
               }}
             >
               <Text style={styles.modalOptionText}>{item}</Text>
@@ -325,8 +327,7 @@ const HomeScreen = ({ navigation }) => {
             key={type}
             style={styles.modalOption}
             onPress={() => {
-              setFilterType(type);
-              setSelectedFilterOption(type); 
+              setSelectedFilterOption(type);
             }}
           >
             <Text style={styles.modalOptionText}>{type}</Text>
@@ -352,6 +353,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
+
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id.toString()}
@@ -367,7 +369,7 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.cardDetailsContainer}>
               <Text style={styles.cardTitle}>{item.name}</Text>
               <Text style={styles.cardDetails}>Brand: {item.brand}</Text>
-              <Text style={styles.cardDetails}>Category: {item.category}</Text>
+              <Text style={styles.cardDetails}> Price: {item.price}</Text>
               <View style={styles.ratingContainer}>
                 {Array.from({ length: 5 }, (_, index) => (
                   <Icon
@@ -395,9 +397,10 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity
             style={styles.modalOption}
             onPress={() => {
-              setFilterType(null);
+              setFilterType('All');
+              setFilterValue('All');
               setModalVisible(false);
-              setSelectedFilterOption(null); 
+              setSelectedFilterOption(null);
             }}
           >
             <Text style={styles.modalOptionText}>Clear Filter</Text>
@@ -407,6 +410,7 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -478,7 +482,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'blue', 
+    backgroundColor: '#fff', 
     borderRadius: 10,         
     marginHorizontal: 20,     
   },
@@ -489,7 +493,7 @@ const styles = StyleSheet.create({
   },
   modalOption: {
     padding: 15,
-    backgroundColor: '#f5f5f5',  // Background color for modal options
+    backgroundColor: '#f5f5f5',  
     marginVertical: 5,
     borderRadius: 8,
     width: '80%',
@@ -500,6 +504,5 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
-
 
 export default HomeScreen;
