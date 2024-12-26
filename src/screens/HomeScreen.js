@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FilterModal from './FilterModal';
 
 const data=[
   {
@@ -272,15 +273,12 @@ const data=[
       "imageUrl":"https://m.media-amazon.com/images/I/71RxCmvnrbL.jpg"
     }
 ]
-
 const HomeScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('All'); // Filter type: 'All', 'Name', 'Brand', or 'Price'
-  const [filterValue, setFilterValue] = useState('All'); // Selected filter value
+  const [filterType, setFilterType] = useState('All');
+  const [filterValue, setFilterValue] = useState('All');
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedFilterOption, setSelectedFilterOption] = useState(null);
 
-  // Generate unique options for each filter type
   const filterOptions = {
     Name: [...new Set(data.map((item) => item.name))],
     Brand: [...new Set(data.map((item) => item.brand))],
@@ -296,46 +294,6 @@ const HomeScreen = ({ navigation }) => {
       (filterType === 'Price' && item.price === filterValue);
     return matchesSearch && matchesFilter;
   });
-
-  const renderFilterOptions = () => {
-    if (selectedFilterOption) {
-      const options = filterOptions[selectedFilterOption];
-      return (
-        <FlatList
-          data={options}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={() => {
-                setFilterType(selectedFilterOption);
-                setFilterValue(item);
-                setModalVisible(false);
-                setSelectedFilterOption(null);
-              }}
-            >
-              <Text style={styles.modalOptionText}>{item}</Text>
-            </TouchableOpacity>
-          )}
-        />
-      );
-    }
-    return (
-      <View style={styles.modalContent}>
-        {Object.keys(filterOptions).map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={styles.modalOption}
-            onPress={() => {
-              setSelectedFilterOption(type);
-            }}
-          >
-            <Text style={styles.modalOptionText}>{type}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -369,7 +327,7 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.cardDetailsContainer}>
               <Text style={styles.cardTitle}>{item.name}</Text>
               <Text style={styles.cardDetails}>Brand: {item.brand}</Text>
-              <Text style={styles.cardDetails}> Price: {item.price}</Text>
+              <Text style={styles.cardDetails}>Price: {item.price}</Text>
               <View style={styles.ratingContainer}>
                 {Array.from({ length: 5 }, (_, index) => (
                   <Icon
@@ -385,31 +343,25 @@ const HomeScreen = ({ navigation }) => {
         )}
       />
 
-      <Modal
+      <FilterModal
         visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Filter by:</Text>
-          {renderFilterOptions()}
-          <TouchableOpacity
-            style={styles.modalOption}
-            onPress={() => {
-              setFilterType('All');
-              setFilterValue('All');
-              setModalVisible(false);
-              setSelectedFilterOption(null);
-            }}
-          >
-            <Text style={styles.modalOptionText}>Clear Filter</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+        onClose={() => setModalVisible(false)}
+        filterOptions={filterOptions}
+        onFilterSelect={(type, value) => {
+          setFilterType(type);
+          setFilterValue(value);
+          setModalVisible(false);
+        }}
+        onClearFilter={() => {
+          setFilterType('All');
+          setFilterValue('All');
+          setModalVisible(false);
+        }}
+      />
     </View>
   );
 };
+
 
 
 const styles = StyleSheet.create({
@@ -478,30 +430,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 8,
   },
-  modalContainer: {
+ modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff', 
-    borderRadius: 10,         
-    marginHorizontal: 20,     
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalTitle: {
-    fontSize: 20,
-    marginBottom: 20,
-    color: '#000',
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
   },
   modalOption: {
-    padding: 15,
-    backgroundColor: '#f5f5f5',  
-    marginVertical: 5,
-    borderRadius: 8,
-    width: '80%',
-    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   modalOptionText: {
     fontSize: 16,
-    color: '#000',
+    color: '#333',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  clearButton: {
+    padding: 10,
+    backgroundColor: '#f44336',
+    marginTop: 10,
+    borderRadius: 5,
+  },
+  clearButtonText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+  closeButton: {
+    padding: 10,
+    backgroundColor: '#007BFF',
+    marginTop: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    textAlign: 'center',
   },
 });
 
